@@ -1,16 +1,5 @@
 package br.com.concrete.bootcampfebruary2021
 
-import android.app.Activity
-import android.app.Instrumentation
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.typeText
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.intent.Intents
-import androidx.test.espresso.intent.Intents.intended
-import androidx.test.espresso.intent.Intents.intending
-import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
-import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
@@ -24,82 +13,90 @@ class LoginActivityTest {
 
     @Test
     fun givenInitialState_shouldHaveEmptyEmailAndPasswordFields() {
-        onView(withId(R.id.email))
-            .check(matches(withText("")))
-
-        onView(withId(R.id.password))
-            .check(matches(withText("")))
+        loginAssert {
+            checkEmailFieldIsEmpty()
+            checkPasswordFieldIsEmpty()
+        }
     }
 
     @Test
     fun givenEmailIsEmpty_whenLogin_shouldShowEmptyEmailError() {
-        onView(withId(R.id.password))
-            .perform(typeText("aA.bksj32"))
-        onView(withId(R.id.login))
-            .perform(click())
+        loginAct {
+            typePassword("aA.bksj32")
+            clickLogin()
+        }
 
-        onView(withText(R.string.error_empty_email))
-            .check(matches(isDisplayed()))
+        loginAssert {
+            checkMessageWasShown(R.string.error_empty_email)
+        }
     }
 
     @Test
     fun givenPasswordIsEmpty_whenLogin_shouldShowEmptyPasswordError() {
-        onView(withId(R.id.email))
-            .perform(typeText("wesley.marcolino@concrete.com.br"))
-        onView(withId(R.id.login))
-            .perform(click())
+        loginAct {
+            typeEmail("wesley.marcolino@concrete.com.br")
+            clickLogin()
+        }
 
-        onView(withText(R.string.error_empty_password))
-            .check(matches(isDisplayed()))
+        loginAssert {
+            checkMessageWasShown(R.string.error_empty_password)
+        }
     }
 
     @Test
     fun givenInvalidPassword_whenLogin_shouldShowInvalidPasswordError() {
-        onView(withId(R.id.email))
-            .perform(typeText("wesley.marcolino@concrete.com.br"))
-        onView(withId(R.id.password))
-            .perform(typeText("1234"))
-        onView(withId(R.id.login))
-            .perform(click())
+        loginAct {
+            typeEmail("wesley.marcolino@concrete.com.br")
+            typePassword("1234")
 
-        onView(withText(R.string.error_invalid_password))
-            .check(matches(isDisplayed()))
+            clickLogin()
+        }
+
+        loginAssert {
+            checkMessageWasShown(R.string.error_invalid_password)
+        }
     }
 
     @Test
     fun givenUserHasEmailTypedAndForgotPassword_whenClick_shouldShowRecoverySent() {
-        onView(withId(R.id.email))
-            .perform(typeText("wesley.marcolino@concrete.com.br"))
-        onView(withId(R.id.forgot_password))
-            .perform(click())
+        loginAct {
+            typeEmail("wesley.marcolino@concrete.com.br")
+            clickForgotPassword()
+        }
 
-        onView(withText("Email sent to wesley.marcolino@concrete.com.br"))
-            .check(matches(isDisplayed()))
+        loginAssert {
+            checkMessageWasShown("Email sent to wesley.marcolino@concrete.com.br")
+        }
     }
 
     @Test
     fun givenUserDoesntHasEmailTypedAndForgotPassword_whenClick_shouldShowError() {
-        onView(withId(R.id.forgot_password))
-            .perform(click())
+        loginAct {
+            clickForgotPassword()
+        }
 
-        onView(withText(R.string.error_email_required))
-            .check(matches(isDisplayed()))
+        loginAssert {
+            checkMessageWasShown(R.string.error_email_required)
+        }
     }
 
     @Test
     fun givenValidPasswordAndEmail_whenLogin_shouldGoToHomeScreen() {
-        Intents.init()
-        intending(hasComponent(HomeActivity::class.java.name))
-            .respondWith(Instrumentation.ActivityResult(Activity.RESULT_CANCELED, null))
+        loginArrange {
+            intentInit()
+            mockHomeScreenActivity()
+        }
 
-        onView(withId(R.id.email))
-            .perform(typeText("wesley.marcolino@concrete.com.br"))
-        onView(withId(R.id.password))
-            .perform(typeText("aA.bksj32"))
-        onView(withId(R.id.login))
-            .perform(click())
+        loginAct {
+            typeEmail("wesley.marcolino@concrete.com.br")
+            typePassword("aA.bksj32")
 
-        intended(hasComponent(HomeActivity::class.java.name))
-        Intents.release()
+            clickLogin()
+        }
+
+        loginAssert {
+            checkHomeScreenWasCalled()
+            intentRelease()
+        }
     }
 }
