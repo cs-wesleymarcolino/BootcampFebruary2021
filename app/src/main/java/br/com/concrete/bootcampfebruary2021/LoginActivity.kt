@@ -1,5 +1,6 @@
 package br.com.concrete.bootcampfebruary2021
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -14,34 +15,39 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val login = findViewById<View>(R.id.login)
-        val email = findViewById<TextView>(R.id.email)
-        val password = findViewById<TextView>(R.id.password)
-        val forgotPassword = findViewById<TextView>(R.id.forgot_password)
+        val loginView = findViewById<View>(R.id.login)
+        val emailView = findViewById<TextView>(R.id.email)
+        val passwordView = findViewById<TextView>(R.id.password)
+        val forgotPasswordView = findViewById<TextView>(R.id.forgot_password)
 
-        login.setOnClickListener {
+        loginView.setOnClickListener {
             when {
-                email.text.isEmpty() -> showMessage(R.string.error_empty_email)
-                password.text.isEmpty() -> showMessage(R.string.error_empty_password)
-                !passwordValidator.validate(password.text.toString()) -> showMessage(R.string.error_invalid_password)
+                emailView.text.isEmpty() -> showMessage(R.string.error_empty_email)
+                passwordView.text.isEmpty() -> showMessage(R.string.error_empty_password)
+                !passwordValidator.validate(passwordView.text.toString()) -> showMessage(R.string.error_invalid_password)
                 else -> {
-
+                    val homeScreenIntent = Intent(this@LoginActivity, HomeActivity::class.java)
+                    startActivity(homeScreenIntent)
                 }
             }
         }
-        forgotPassword.setOnClickListener {
-            if (email.text.isEmpty()) {
+        forgotPasswordView.setOnClickListener {
+            val email = emailView.text
+            if (email.isEmpty()) {
                 showMessage(R.string.error_email_required)
             } else {
-
-                // TODO implement email sent
+                showMessage(getString(R.string.email_sent, email))
             }
         }
     }
 
     private fun showMessage(@StringRes messageRes: Int) {
+        showMessage(getString(messageRes))
+    }
+
+    private fun showMessage(message: String) {
         AlertDialog.Builder(this)
-            .setMessage(messageRes)
+            .setMessage(message)
             .show()
     }
 }
